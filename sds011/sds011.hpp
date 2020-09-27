@@ -13,9 +13,9 @@ class sds011 {
 
 	void set_sleep(bool sleep);
 
-	void set_working_period(unsigned char period);
+	void set_working_period(uint8_t period);
 
-	void set_mode(unsigned char mode);
+	void set_mode(uint8_t mode);
 
 	void query_data();
 
@@ -24,8 +24,8 @@ class sds011 {
 
 	termios tty_back;
 
-	unsigned char response[10];
-	unsigned char request[19] = {0xaa, 0xb4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0, 0xab};
+	uint8_t response[10];
+	uint8_t request[19] = {0xaa, 0xb4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0, 0xab};
 
 	void send_command();
 
