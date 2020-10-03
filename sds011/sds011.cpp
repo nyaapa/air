@@ -1,3 +1,5 @@
+// heavily based on https://github.com/paulvha/sps30_on_raspberry
+
 #include "sds011.hpp"
 
 #include <fcntl.h>
@@ -164,14 +166,6 @@ void sds011::set_mode(uint8_t mode) {
 	send_command();
 }
 
-void sds011::query_data() {
-	request[command_idx] = static_cast<uint8_t>(command::query);
-	request[data1_idx] = 0;
-	request[data2_idx] = 0;
-	send_command();
-	print_data();
-}
-
 void sds011::send_command() {
 	constexpr uint8_t response_tail = 0xab;
 	constexpr uint8_t checksum_request_idx = 17;
@@ -214,11 +208,17 @@ void sds011::print_data() {
 	constexpr uint8_t response_head = 0xc0;
 	constexpr uint8_t response_head_idx = 1;
 
+	request[command_idx] = static_cast<uint8_t>(command::query);
+	request[data1_idx] = 0;
+	request[data2_idx] = 0;
+	send_command();
+
 	if (response[response_head_idx] != response_head) {
 		fmt::print("<null>\n");
 	} else {
 		data& x = *reinterpret_cast<data*>(&response[command_idx]);
 
-		fmt::print("PM 2.5: {} μg/m^3  PM 10: {} μg/m^3\n", (parse_le(x.pm25_le) / 10.0), (parse_le(x.pm10_le) / 10.0));
+		fmt::print("{}PM25\n", parse_le(x.pm25_le));
+		fmt::print("{}PM10\n", parse_le(x.pm10_le));
 	}
 }

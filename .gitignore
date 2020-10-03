@@ -4,3 +4,4 @@ Makefile
 CMakeCache.txt
 .vscode
 sds011/sds011
+bme280/bme280
