@@ -72,11 +72,6 @@ s8::~s8() {
 	close(fh);
 }
 
-void s8::query_data() {
-	send_command();
-	print_data();
-}
-
 void s8::send_command() {
 #ifndef NDEBUG
 	fmt::print("< ");
@@ -100,6 +95,8 @@ void s8::send_command() {
 }
 
 void s8::print_data() {
+	send_command();
+
 	ulong data = (response[3] << 8) + response[4];
 
 	fmt::print("CO2: {} PPM\n", data);
