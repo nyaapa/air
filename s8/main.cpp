@@ -6,10 +6,6 @@
 int main(int, char**) {
 	try {
 		s8 h{"/dev/ttyUSB0"};
-		h.set_sleep(false);
-		h.firmware_ver();
-		h.set_working_period(0);
-		h.set_mode(1);
 		// for (int i = 0 ; i < 10; ++i ) {
 		h.query_data();
 		// 	sleep(2);
