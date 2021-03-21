@@ -1,3 +1,5 @@
+// heavily based on https://github.com/paulvha/sps30_on_raspberry
+
 #include "sds011.hpp"
 
 #include <fcntl.h>
@@ -64,40 +66,10 @@ void configure_interface(int fh, int speed) {
 	tty.c_oflag &= ~OPOST;
 
 	/* fetch bytes as they become available */
-	tty.c_cc[VMIN] = 1;
-	tty.c_cc[VTIME] = 1;
+	tty.c_cc[VMIN] = 0;
+	tty.c_cc[VTIME] = 5;
 
 	if (tcsetattr(fh, TCSANOW, &tty) != 0)
-		throw std::runtime_error(fmt::format("Failed to tcsetattr: {}", strerror(errno)));
-
-	tty.c_cflag |= CS8;      /* 8-bit characters */
-	tty.c_cflag &= ~PARENB;  /* no parity bit */
-	tty.c_cflag &= ~CSTOPB;  /* on#pack-TEMPLATE%2cLISTly need 1 stop bit */
-	tty.c_cflag &= ~CRTSCTS; /* no hardware flowcontrol */
-
-	/* setup for non-canonical mode */
-	tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-	tty.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-	tty.c_oflag &= ~OPOST;
-
-	/* fetch bytes as they become available */
-	tty.c_cc[VMIN] = 1;
-	tty.c_cc[VTIME] = 1;
-
-	if (tcsetattr(fh, TCSANOW, &tty) != 0)
-		throw std::runtime_error(fmt::format("Failed to tcsetattr: {}", strerror(errno)));
-}
-
-void set_blocking(int fh, int mcount) {
-	termios tty;
-
-	if (tcgetattr(fh, &tty) < 0)
-		throw std::runtime_error(fmt::format("Failed to tcgetattr: {}", strerror(errno)));
-
-	tty.c_cc[VMIN] = mcount ? 1 : 0;
-	tty.c_cc[VTIME] = 5; /* half second timer */
-
-	if (tcsetattr(fh, TCSANOW, &tty) < 0)
 		throw std::runtime_error(fmt::format("Failed to tcsetattr: {}", strerror(errno)));
 }
 };  // namespace
@@ -111,7 +83,6 @@ sds011::sds011(const char* const path) : fh{open(path, O_RDWR | O_NOCTTY | O_SYN
 			throw std::runtime_error(fmt::format("Failed to tcgetattr: {}", strerror(errno)));
 
 		configure_interface(fh, B9600);
-		set_blocking(fh, 0);
 
 		/* There is a problem with flushing buffers on a serial USB that can
 		 * not be solved. The only thing one can try is to flush any buffers
@@ -164,14 +135,6 @@ void sds011::set_mode(uint8_t mode) {
 	send_command();
 }
 
-void sds011::query_data() {
-	request[command_idx] = static_cast<uint8_t>(command::query);
-	request[data1_idx] = 0;
-	request[data2_idx] = 0;
-	send_command();
-	print_data();
-}
-
 void sds011::send_command() {
 	constexpr uint8_t response_tail = 0xab;
 	constexpr uint8_t checksum_request_idx = 17;
@@ -214,11 +177,17 @@ void sds011::print_data() {
 	constexpr uint8_t response_head = 0xc0;
 	constexpr uint8_t response_head_idx = 1;
 
+	request[command_idx] = static_cast<uint8_t>(command::query);
+	request[data1_idx] = 0;
+	request[data2_idx] = 0;
+	send_command();
+
 	if (response[response_head_idx] != response_head) {
 		fmt::print("<null>\n");
 	} else {
 		data& x = *reinterpret_cast<data*>(&response[command_idx]);
 
-		fmt::print("PM 2.5: {} μg/m^3  PM 10: {} μg/m^3\n", (parse_le(x.pm25_le) / 10.0), (parse_le(x.pm10_le) / 10.0));
+		fmt::print("{}PM25\n", parse_le(x.pm25_le));
+		fmt::print("{}PM10\n", parse_le(x.pm10_le));
 	}
 }

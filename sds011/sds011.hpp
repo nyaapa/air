@@ -17,7 +17,7 @@ class sds011 {
 
 	void set_mode(uint8_t mode);
 
-	void query_data();
+	void print_data();
 
  private:
 	const int fh;
@@ -30,6 +30,4 @@ class sds011 {
 	void send_command();
 
 	void print_version();
-
-	void print_data();
 };
