@@ -131,11 +131,7 @@ void s8::send_command() {
 }
 
 void s8::print_data() {
-	if (response[response_head_idx] != response_head) {
-		fmt::print("<null>\n");
-	} else {
-		ulong data = (response[3] << 8) + response[4];
+	ulong data = (response[3] << 8) + response[4];
 
-		fmt::print("CO2: {} PPM\n", data);
-	}
+	fmt::print("CO2: {} PPM\n", data);
 }
