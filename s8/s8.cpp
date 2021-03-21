@@ -32,40 +32,10 @@ void configure_interface(int fh, int speed) {
 	tty.c_oflag &= ~OPOST;
 
 	/* fetch bytes as they become available */
-	tty.c_cc[VMIN] = 1;
-	tty.c_cc[VTIME] = 1;
+	tty.c_cc[VMIN] = 7;
+	tty.c_cc[VTIME] = 5;
 
 	if (tcsetattr(fh, TCSANOW, &tty) != 0)
-		throw std::runtime_error(fmt::format("Failed to tcsetattr: {}", strerror(errno)));
-
-	tty.c_cflag |= CS8;      /* 8-bit characters */
-	tty.c_cflag &= ~PARENB;  /* no parity bit */
-	tty.c_cflag &= ~CSTOPB;  /* on#pack-TEMPLATE%2cLISTly need 1 stop bit */
-	tty.c_cflag &= ~CRTSCTS; /* no hardware flowcontrol */
-
-	/* setup for non-canonical mode */
-	tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-	tty.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-	tty.c_oflag &= ~OPOST;
-
-	/* fetch bytes as they become available */
-	tty.c_cc[VMIN] = 1;
-	tty.c_cc[VTIME] = 1;
-
-	if (tcsetattr(fh, TCSANOW, &tty) != 0)
-		throw std::runtime_error(fmt::format("Failed to tcsetattr: {}", strerror(errno)));
-}
-
-void set_blocking(int fh, int mcount) {
-	termios tty;
-
-	if (tcgetattr(fh, &tty) < 0)
-		throw std::runtime_error(fmt::format("Failed to tcgetattr: {}", strerror(errno)));
-
-	tty.c_cc[VMIN] = mcount ? 1 : 0;
-	tty.c_cc[VTIME] = 5; /* half second timer */
-
-	if (tcsetattr(fh, TCSANOW, &tty) < 0)
 		throw std::runtime_error(fmt::format("Failed to tcsetattr: {}", strerror(errno)));
 }
 };  // namespace
@@ -79,7 +49,6 @@ s8::s8(const char* const path) : fh{open(path, O_RDWR | O_NOCTTY | O_SYNC)} {
 			throw std::runtime_error(fmt::format("Failed to tcgetattr: {}", strerror(errno)));
 
 		configure_interface(fh, B9600);
-		set_blocking(fh, 0);
 
 		/* There is a problem with flushing buffers on a serial USB that can
 		 * not be solved. The only thing one can try is to flush any buffers
@@ -119,8 +88,8 @@ void s8::send_command() {
 	if (write(fh, request, std::extent_v<decltype(request)>) != std::extent_v<decltype(request)>)
 		throw std::runtime_error(fmt::format("USB control write failed: {}", +strerror(errno)));
 
-	if (read(fh, response, std::extent_v<decltype(response)>) != std::extent_v<decltype(response)>)
-		throw std::runtime_error(fmt::format("USB read failed: {}", strerror(errno)));
+	if (auto bytes = read(fh, response, std::extent_v<decltype(response)>); bytes != std::extent_v<decltype(response)>)
+		throw std::runtime_error(fmt::format("USB read failed, read only {}: {}", bytes, strerror(errno)));
 
 #ifndef NDEBUG
 	fmt::print("> ");
