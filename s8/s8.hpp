@@ -19,4 +19,6 @@ class s8 {
 	uint8_t response[7];
 
 	void send_command();
+
+	void print_data();
 };
