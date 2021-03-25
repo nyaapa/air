@@ -2,7 +2,7 @@
 
 class bme280 {
  public:
-	bme280();
+	explicit bme280();
 	~bme280();
 	void print_data();
 
