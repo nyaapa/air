@@ -7,7 +7,7 @@ int main(int, char**) {
 	try {
 		s8 h{};
 		// for (int i = 0 ; i < 10; ++i ) {
-		h.query_data();
+		h.print_data();
 		// 	sleep(2);
 		// }
 	} catch (const std::exception& e) {

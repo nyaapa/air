@@ -9,7 +9,7 @@ class s8 {
 
 	~s8();
 
-	void query_data();
+	void print_data();
 
  private:
 	const int fh;
@@ -19,6 +19,4 @@ class s8 {
 	uint8_t response[7];
 
 	void send_command();
-
-	void print_data();
 };
