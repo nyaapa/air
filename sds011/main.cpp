@@ -5,7 +5,7 @@
 
 int main(int, char**) {
 	try {
-		sds011 h{"/dev/ttyUSB0"};
+		sds011 h{};
 		h.set_sleep(false);
 		//h.firmware_ver();
 		h.set_working_period(0);

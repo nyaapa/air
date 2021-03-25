@@ -5,7 +5,7 @@
 
 class sds011 {
  public:
-	sds011(const char* const path);
+	explicit sds011();
 
 	~sds011();
 

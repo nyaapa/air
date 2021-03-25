@@ -6,8 +6,11 @@
 #include <fmt/core.h>
 #include <exception>
 #include <numeric>
+#include <string_view>
 
 namespace {
+constexpr std::string_view path = "/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0";
+
 constexpr uint8_t request[7] = {0xFE, 0x44, 0x00, 0x08, 0x02, 0x9F, 0x25};
 
 void configure_interface(int fh, int speed) {
@@ -40,7 +43,7 @@ void configure_interface(int fh, int speed) {
 }
 };  // namespace
 
-s8::s8(const char* const path) : fh{open(path, O_RDWR | O_NOCTTY | O_SYNC)} {
+s8::s8() : fh{open(path.data(), O_RDWR | O_NOCTTY | O_SYNC)} {
 	if (fh < 0)
 		throw std::runtime_error(fmt::format("Failed to open '{}': {}", path, strerror(errno)));
 
