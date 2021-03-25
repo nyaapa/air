@@ -5,7 +5,7 @@
 
 int main(int, char**) {
 	try {
-		s8 h{"/dev/ttyUSB1"};
+		s8 h{};
 		// for (int i = 0 ; i < 10; ++i ) {
 		h.print_data();
 		// 	sleep(2);

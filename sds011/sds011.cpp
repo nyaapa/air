@@ -8,8 +8,11 @@
 #include <fmt/core.h>
 #include <exception>
 #include <numeric>
+#include <string_view>
 
 namespace {
+constexpr std::string_view path = "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0";
+
 constexpr uint8_t command_idx = 2;
 constexpr uint8_t data1_idx = 3;
 constexpr uint8_t data2_idx = 4;
@@ -74,7 +77,7 @@ void configure_interface(int fh, int speed) {
 }
 };  // namespace
 
-sds011::sds011(const char* const path) : fh{open(path, O_RDWR | O_NOCTTY | O_SYNC)} {
+sds011::sds011() : fh{open(path.data(), O_RDWR | O_NOCTTY | O_SYNC)} {
 	if (fh < 0)
 		throw std::runtime_error(fmt::format("Failed to open '{}': {}", path, strerror(errno)));
 

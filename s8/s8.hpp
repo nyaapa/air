@@ -5,7 +5,7 @@
 
 class s8 {
  public:
-	s8(const char* const path);
+	explicit s8();
 
 	~s8();
 
