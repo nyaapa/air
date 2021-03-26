@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.5)
 
 project(air CXX)
 
-add_compile_options(-Wall -Wextra -Werror -std=c++1z)
+add_compile_options(-Wall -Wextra -Werror -std=c++1z -fconcepts)
 
 add_executable(air main.cpp sds011/sds011.cpp s8/s8.cpp bme280/bme280.cpp)
 
