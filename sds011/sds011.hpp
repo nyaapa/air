@@ -7,6 +7,7 @@
 class sds011 {
  public:
 	explicit sds011();
+	explicit sds011(sds011&&);
 
 	~sds011();
 
@@ -24,7 +25,7 @@ class sds011 {
 
 	[[nodiscard]] data get_data();
  private:
-	const int fh;
+	int fh;
 
 	termios tty_back;
 

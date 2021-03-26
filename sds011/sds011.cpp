@@ -102,11 +102,17 @@ sds011::sds011() : fh{open(path.data(), O_RDWR | O_NOCTTY | O_SYNC)} {
 	}
 }
 
-sds011::~sds011() {
-	if (tcsetattr(fh, TCSANOW, &tty_back) < 0)
-		fmt::print(stderr, "Failed to reset tcsetattr: {}", strerror(errno));
+sds011::sds011(sds011&& o) : fh{o.fh}, tty_back{o.tty_back} {
+	o.fh = 0;
+}
 
-	close(fh);
+sds011::~sds011() {
+	if (fh) {
+		if (tcsetattr(fh, TCSANOW, &tty_back) < 0)
+			fmt::print(stderr, "Failed to reset tcsetattr: {}", strerror(errno));
+
+		close(fh);
+	}
 }
 
 void sds011::firmware_ver() {

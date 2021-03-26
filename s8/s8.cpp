@@ -68,11 +68,17 @@ s8::s8() : fh{open(path.data(), O_RDWR | O_NOCTTY | O_SYNC)} {
 	}
 }
 
-s8::~s8() {
-	if (tcsetattr(fh, TCSANOW, &tty_back) < 0)
-		fmt::print(stderr, "Failed to reset tcsetattr: {}", strerror(errno));
+s8::s8(s8&& o) : fh{o.fh}, tty_back{o.tty_back} {
+	o.fh = 0;
+}
 
-	close(fh);
+s8::~s8() {
+	if (fh) {
+		if (tcsetattr(fh, TCSANOW, &tty_back) < 0)
+			fmt::print(stderr, "Failed to reset tcsetattr: {}", strerror(errno));
+
+		close(fh);
+	}
 }
 
 void s8::send_command() {

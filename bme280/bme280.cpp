@@ -192,8 +192,13 @@ bme280::bme280() : fd{wiringPiI2CSetup(bme280_address)} {
 		throw std::runtime_error("Device not found");
 }
 
+bme280::bme280(bme280&& o) : fd{o.fd} {
+	o.fd = 0;
+}
+
 bme280::~bme280() {
-	close(fd);
+	if (fd)
+		close(fd);
 }
 
 void bme280::print_data() {
