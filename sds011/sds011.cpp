@@ -177,6 +177,12 @@ void sds011::print_version() {
 }
 
 void sds011::print_data() {
+	auto data = this->get_data();
+	fmt::print("PM10: {}\n", data.deca_pm10 / 10.0);
+	fmt::print("PM2.5: {}\n", data.deca_pm25 / 10.0);
+}
+
+sds011::data sds011::get_data() {
 	constexpr uint8_t response_head = 0xc0;
 	constexpr uint8_t response_head_idx = 1;
 
@@ -186,11 +192,10 @@ void sds011::print_data() {
 	send_command();
 
 	if (response[response_head_idx] != response_head) {
-		fmt::print("<null>\n");
+		throw std::runtime_error("Can't read response from sds011");
 	} else {
-		data& x = *reinterpret_cast<data*>(&response[command_idx]);
+		::data& x = *reinterpret_cast<::data*>(&response[command_idx]);
 
-		fmt::print("{}PM25\n", parse_le(x.pm25_le));
-		fmt::print("{}PM10\n", parse_le(x.pm10_le));
+		return {.deca_pm25 = parse_le(x.pm25_le), .deca_pm10 = parse_le(x.pm10_le)};
 	}
 }

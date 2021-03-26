@@ -11,7 +11,7 @@
 #include <wiringPiI2C.h>
 
 namespace {
-
+constexpr double deca_kelvin_zero = 2731.5;
 constexpr uint16_t bme280_address = 0x76;
 
 constexpr uint16_t bme280_register_dig_t1 = 0x88;
@@ -179,7 +179,7 @@ bme280_raw_data read_data(const int fd) {
 	int32_t t_fine = get_temperature_calibration(cal, temperature);
 
 	return {
-	    .deca_temperature_k = static_cast<uint16_t>(deca_celcius(t_fine) + 2731.5),
+	    .deca_temperature_k = static_cast<uint16_t>(deca_celcius(t_fine) + deca_kelvin_zero),
 	    .deca_pressure = static_cast<uint16_t>(deca_pressure(pressure, cal, t_fine)),
 	    .deca_humidity = static_cast<uint16_t>(deca_humidity(humidity, cal, t_fine)),
 	};
@@ -197,8 +197,14 @@ bme280::~bme280() {
 }
 
 void bme280::print_data() {
+	auto data = this->get_data();
+
+	fmt::print("Temp: {}℃\n", (data.deca_kelvin - deca_kelvin_zero) / 10.0 );
+	fmt::print("Humi: {}%\n", data.deca_humidity / 10.0);
+}
+
+bme280::data bme280::get_data() {
 	auto data = read_data(fd);
 
-	fmt::print("{}Temp\n", data.deca_temperature_k);
-	fmt::print("{}Humi\n", data.deca_humidity);
+	return {.deca_humidity = data.deca_humidity, .deca_kelvin = data.deca_temperature_k};
 }

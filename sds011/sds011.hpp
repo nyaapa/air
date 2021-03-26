@@ -2,6 +2,7 @@
 
 #include <termios.h>
 #include <string>
+#include <cstdint>
 
 class sds011 {
  public:
@@ -19,6 +20,9 @@ class sds011 {
 
 	void print_data();
 
+	struct data { uint64_t deca_pm25; uint64_t deca_pm10; };
+
+	[[nodiscard]] data get_data();
  private:
 	const int fh;
 

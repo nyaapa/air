@@ -98,9 +98,11 @@ void s8::send_command() {
 }
 
 void s8::print_data() {
+	auto data = this->get_data(); 
+	fmt::print("CO2: {} ppm\n", data.co2);
+}
+
+s8::data s8::get_data() {
 	send_command();
-
-	ulong data = (response[3] << 8) + response[4];
-
-	fmt::print("CO2: {} PPM\n", data);
+	return {.co2 = uint64_t(response[3] << 8) + response[4]};
 }
