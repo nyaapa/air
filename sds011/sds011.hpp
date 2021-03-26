@@ -2,10 +2,12 @@
 
 #include <termios.h>
 #include <string>
+#include <cstdint>
 
 class sds011 {
  public:
 	explicit sds011();
+	explicit sds011(sds011&&);
 
 	~sds011();
 
@@ -19,8 +21,11 @@ class sds011 {
 
 	void print_data();
 
+	struct data { uint64_t deca_pm25; uint64_t deca_pm10; };
+
+	[[nodiscard]] data get_data();
  private:
-	const int fh;
+	int fh;
 
 	termios tty_back;
 

@@ -1,16 +1,18 @@
 cmake_minimum_required (VERSION 3.5)
 
-project(sds011 CXX)
+project(air CXX)
 
 add_compile_options(-Wall -Wextra -Werror -std=c++1z)
 
-add_executable(sds011 main.cpp sds011.cpp)
+add_executable(air main.cpp sds011/sds011.cpp s8/s8.cpp bme280/bme280.cpp)
 
 find_package(fmt)
 
-target_link_libraries(sds011 fmt::fmt)
+find_library(wiringPi_LIB wiringPi)
 
-file(GLOB ALL_SOURCE_FILES *.cpp *.hpp)
+target_link_libraries(air fmt::fmt ${wiringPi_LIB})
+
+file(GLOB ALL_SOURCE_FILES *.cpp *.hpp s8/*.cpp s8/*.hpp sds011/*.cpp sds011/*.hpp bme280/*.cpp bme280/*.hpp)
 
 add_custom_target(
 	format
