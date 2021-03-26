@@ -7,6 +7,8 @@
 #include <fmt/core.h>
 #include <optional>
 #include <type_traits>
+#include <thread>
+#include <chrono>
 
 namespace {
 template<typename T>
@@ -49,7 +51,7 @@ void print_data(auto& h) {
 }
 };
 
-int main(int, char**) {
+int main(int argc, char** argv) {
 	auto s8h = init_handler<s8>();
 	auto sds011h = init_handler<sds011>([](auto& h){
 		h->set_sleep(false);
@@ -58,9 +60,17 @@ int main(int, char**) {
 	});
 	auto bme280h = init_handler<bme280>();
 
-	print_data(s8h);
-	print_data(sds011h);
-	print_data(bme280h);
+	int sleep_time = (argc == 2) ? std::stoul(argv[1]) : 0;
+
+	do {
+		print_data(s8h);
+		print_data(sds011h);
+		print_data(bme280h);
+		if (sleep_time) {
+			fmt::print("---------------------------------------------\n");
+			std::this_thread::sleep_for(std::chrono::seconds(sleep_time));
+		}
+	} while (sleep_time);
 
 	return 0;
 }
