@@ -13,51 +13,51 @@
 #include <chrono>
 
 namespace {
-template<typename T>
-auto init_handler() {
-	std::optional<T> h;
-
-	try {
-		h.emplace();
-	} catch (const std::exception& e) {
-		h.reset();
-		fmt::print("Failed to init: {}\n", e.what());
+void init_handler(auto& h) {
+	if (!h) {
+		try {
+			h.emplace();
+		} catch (const std::exception& e) {
+			fmt::print("Failed to init: {}\n", e.what());
+			h.reset();
+		}
 	}
-
-	return h;
 }
 
-template<typename T>
-auto init_handler(auto&& init)
+void init_handler(auto& h, auto&& init)
 	requires std::is_rvalue_reference_v<decltype(init)> 
 {
-	std::optional<T> h;
-
-	try {
-		h.emplace();
-		init(h);
-	} catch (const std::exception& e) {
-		h.reset();
-		fmt::print("Failed to init: {}\n", e.what());
+	if (!h) {
+		try {
+			h.emplace();
+			init(h);
+		} catch (const std::exception& e) {
+			fmt::print("Failed to init: {}\n", e.what());
+			h.reset();
+		}
 	}
-
-	return h;
 }
 
 void print_data(auto& h) {
-	try {
-		h->print_data();
-	} catch (const std::exception& e) {
-		fmt::print("Failed to print data: {}\n", e.what());
+	if (h) {
+		try {
+			h->print_data();
+		} catch (const std::exception& e) {
+			fmt::print("Failed to print data: {}\n", e.what());
+			h.reset();
+		}
 	}
 }
 
 void add_data(auto& h, auto&& adder) {
-	try {
-		const auto data = h->get_data();
-		adder(data);
-	} catch (const std::exception& e) {
-		fmt::print("Failed to add data: {}\n", e.what());
+	if (h) {
+		try {
+			const auto data = h->get_data();
+			adder(data);
+		} catch (const std::exception& e) {
+			fmt::print("Failed to add data: {}\n", e.what());
+			h.reset();
+		}
 	}
 }
 };
@@ -82,15 +82,21 @@ int main(int argc, char** argv) {
 		exit(0);
 	}
 
-	auto s8h = init_handler<s8>();
-	auto sds011h = init_handler<sds011>([](auto& h){
-		h->set_sleep(false);
-		h->set_working_period(0);
-		h->set_mode(1);
-	});
-	auto bme280h = init_handler<bme280>();
+	std::optional<s8> s8h;
+	std::optional<sds011> sds011h;
+	std::optional<bme280> bme280h;
 
 	do {
+		init_handler(s8h);
+
+		init_handler(sds011h, [](auto& h){
+			h->set_sleep(false);
+			h->set_working_period(0);
+			h->set_mode(1);
+		});
+
+		init_handler(bme280h);
+
 		if (json) {
 			std::string result;
 			add_data(s8h, [&result](const auto& data) mutable { 
