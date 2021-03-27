@@ -11,6 +11,7 @@
 #include <optional>
 #include <thread>
 #include <type_traits>
+#include <string>
 
 namespace {
 void init_handler(auto& h) {
@@ -65,14 +66,30 @@ int main(int argc, char** argv) {
 
 	uint sleep_time = 0;
 	bool json = false;
+	std::string name;
+	std::string receiver;
 
-	options.add_options()("s,sleep-time", "sleep time between probes", cxxopts::value<uint>(sleep_time))(
-	    "j,json", "response in json", cxxopts::value<bool>(json))("h,help", "Print help");
+	options.add_options()
+		("s,sleep-time", "sleep time between probes", cxxopts::value<uint>(sleep_time))
+		("j,json", "response in json", cxxopts::value<bool>(json))
+		("n,name", "name of that sender, required for sending", cxxopts::value<std::string>(name))
+		("r,receiver", "receiver address, requires name", cxxopts::value<std::string>(receiver))
+		("h,help", "Print help");
 
 	auto result = options.parse(argc, argv);
 
 	if (result.count("help")) {
 		fmt::print("{}\n", options.help({""}));
+		exit(0);
+	}
+
+	if (!receiver.empty() && name.empty()) {
+		fmt::print("Name should be specified with receiver {}\n", options.help({""}));
+		exit(0);
+	}
+
+	if (std::find_if(name.begin(), name.end(), [](char c){return !isalnum(c);}) != name.end()) {
+		fmt::print("Name should be only alphanumerical {}\n", options.help({""}));
 		exit(0);
 	}
 
@@ -92,13 +109,13 @@ int main(int argc, char** argv) {
 		init_handler(bme280h);
 
 		if (json) {
-			std::string result;
-			add_data(s8h, [&result](const auto& data) mutable { result += fmt::format("\"co2\":{}", data.co2); });
+			std::string result{fmt::format("\"name\":\"{}\"", name)};
+			add_data(s8h, [&result](const auto& data) mutable { result += fmt::format(",\"co2\":{}", data.co2); });
 			add_data(sds011h, [&result](const auto& data) mutable {
-				result += fmt::format("{}\"deca_pm25\":{},\"deca_pm10\":{}", (result.empty() ? "" : ","), data.deca_pm25, data.deca_pm10);
+				result += fmt::format(",\"deca_pm25\":{},\"deca_pm10\":{}", data.deca_pm25, data.deca_pm10);
 			});
 			add_data(bme280h, [&result](const auto& data) mutable {
-				result += fmt::format("{}\"deca_humidity\":{},\"deca_kelvin\":{}", (result.empty() ? "" : ","), data.deca_humidity, data.deca_kelvin);
+				result += fmt::format(",\"deca_humidity\":{},\"deca_kelvin\":{}", data.deca_humidity, data.deca_kelvin);
 			});
 			fmt::print("{{{}}}\n", result);
 		} else {
