@@ -18,7 +18,7 @@ void init_handler(auto& h) {
 		try {
 			h.emplace();
 		} catch (const std::exception& e) {
-			fmt::print("Failed to init: {}\n", e.what());
+			fmt::print(stderr, "Failed to init: {}\n", e.what());
 			h.reset();
 		}
 	}
@@ -32,7 +32,7 @@ void init_handler(auto& h, auto&& init)
 			h.emplace();
 			init(h);
 		} catch (const std::exception& e) {
-			fmt::print("Failed to init: {}\n", e.what());
+			fmt::print(stderr, "Failed to init: {}\n", e.what());
 			h.reset();
 		}
 	}
@@ -43,7 +43,7 @@ void print_data(auto& h) {
 		try {
 			h->print_data();
 		} catch (const std::exception& e) {
-			fmt::print("Failed to print data: {}\n", e.what());
+			fmt::print(stderr, "Failed to print data: {}\n", e.what());
 			h.reset();
 		}
 	}
@@ -55,7 +55,7 @@ void add_data(auto& h, auto&& adder) {
 			const auto data = h->get_data();
 			adder(data);
 		} catch (const std::exception& e) {
-			fmt::print("Failed to add data: {}\n", e.what());
+			fmt::print(stderr, "Failed to add data: {}\n", e.what());
 			h.reset();
 		}
 	}
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
 		}
 
 		if (sleep_time) {
-			fmt::print("---------------------------------------------\n");
+			fmt::print(stderr, "---------------------------------------------\n");
 			std::this_thread::sleep_for(std::chrono::seconds(sleep_time));
 		}
 	} while (sleep_time);
