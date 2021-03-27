@@ -110,10 +110,8 @@ bme280_calib_data read_calibration_data(const int fd) {
 	result.dig_H1 = static_cast<uint8_t>(wiringPiI2CReadReg8(fd, bme280_register_dig_h1));
 	result.dig_H2 = static_cast<int16_t>(wiringPiI2CReadReg16(fd, bme280_register_dig_h2));
 	result.dig_H3 = static_cast<uint8_t>(wiringPiI2CReadReg8(fd, bme280_register_dig_h3));
-	result.dig_H4 = (wiringPiI2CReadReg8(fd, bme280_register_dig_h4) << 4) |
-	                (wiringPiI2CReadReg8(fd, bme280_register_dig_h4 + 1) & 0xF);
-	result.dig_H5 = (wiringPiI2CReadReg8(fd, bme280_register_dig_h5 + 1) << 4) |
-	                (wiringPiI2CReadReg8(fd, bme280_register_dig_h5) >> 4);
+	result.dig_H4 = (wiringPiI2CReadReg8(fd, bme280_register_dig_h4) << 4) | (wiringPiI2CReadReg8(fd, bme280_register_dig_h4 + 1) & 0xF);
+	result.dig_H5 = (wiringPiI2CReadReg8(fd, bme280_register_dig_h5 + 1) << 4) | (wiringPiI2CReadReg8(fd, bme280_register_dig_h5) >> 4);
 	result.dig_H6 = static_cast<int8_t>(wiringPiI2CReadReg8(fd, bme280_register_dig_h6));
 
 	return result;
@@ -151,10 +149,7 @@ float deca_humidity(int32_t adc_H, bme280_calib_data& cal, int32_t t_fine) {
 
 	v_x1_u32r =
 	    (((((adc_H << 14) - (cal.dig_H4 << 20) - (cal.dig_H5 * v_x1_u32r)) + 16384) >> 15) *
-	     (((((((v_x1_u32r * cal.dig_H6) >> 10) * (((v_x1_u32r * cal.dig_H3) >> 11) + 32768)) >> 10) + 2097152) *
-	           cal.dig_H2 +
-	       8192) >>
-	      14));
+	     (((((((v_x1_u32r * cal.dig_H6) >> 10) * (((v_x1_u32r * cal.dig_H3) >> 11) + 32768)) >> 10) + 2097152) * cal.dig_H2 + 8192) >> 14));
 
 	v_x1_u32r = (v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * cal.dig_H1) >> 4));
 
@@ -168,7 +163,7 @@ bme280_raw_data read_data(const int fd) {
 	auto cal = read_calibration_data(fd);
 
 	wiringPiI2CWriteReg8(fd, bme280_register_controlhumid, 0x01);  // humidity oversampling x 1
-	wiringPiI2CWriteReg8(fd, bme280_register_control, 0x25);  // pressure and temperature oversampling x 1, mode normal
+	wiringPiI2CWriteReg8(fd, bme280_register_control, 0x25);       // pressure and temperature oversampling x 1, mode normal
 
 	wiringPiI2CWrite(fd, bme280_register_pressuredata);
 
@@ -204,7 +199,7 @@ bme280::~bme280() {
 void bme280::print_data() {
 	auto data = this->get_data();
 
-	fmt::print("Temp: {}℃\n", (data.deca_kelvin - deca_kelvin_zero) / 10.0 );
+	fmt::print("Temp: {}℃\n", (data.deca_kelvin - deca_kelvin_zero) / 10.0);
 	fmt::print("Humi: {}%\n", data.deca_humidity / 10.0);
 }
 

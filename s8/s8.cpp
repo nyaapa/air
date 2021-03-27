@@ -104,7 +104,7 @@ void s8::send_command() {
 }
 
 void s8::print_data() {
-	auto data = this->get_data(); 
+	auto data = this->get_data();
 	fmt::print("CO2: {} ppm\n", data.co2);
 }
 
