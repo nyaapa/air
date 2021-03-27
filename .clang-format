@@ -1,7 +1,7 @@
 ﻿---
 BasedOnStyle: Chromium
 AlignAfterOpenBracket: AlwaysBreak
-ColumnLimit: 120
+ColumnLimit: 160
 TabWidth: 2
 IndentWidth: 2
 UseTab: ForIndentation

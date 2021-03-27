@@ -1,8 +1,8 @@
 #pragma once
 
 #include <termios.h>
-#include <string>
 #include <cstdint>
+#include <string>
 
 class s8 {
  public:
@@ -13,9 +13,12 @@ class s8 {
 
 	void print_data();
 
-	struct data { uint64_t co2; };
+	struct data {
+		uint64_t co2;
+	};
 
 	[[nodiscard]] data get_data();
+
  private:
 	int fh;
 

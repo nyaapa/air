@@ -1,8 +1,8 @@
 #pragma once
 
 #include <termios.h>
-#include <string>
 #include <cstdint>
+#include <string>
 
 class sds011 {
  public:
@@ -21,9 +21,13 @@ class sds011 {
 
 	void print_data();
 
-	struct data { uint64_t deca_pm25; uint64_t deca_pm10; };
+	struct data {
+		uint64_t deca_pm25;
+		uint64_t deca_pm10;
+	};
 
 	[[nodiscard]] data get_data();
+
  private:
 	int fh;
 

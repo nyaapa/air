@@ -1,16 +1,16 @@
-#include "sds011/sds011.hpp"
-#include "s8/s8.hpp"
 #include "bme280/bme280.hpp"
+#include "s8/s8.hpp"
+#include "sds011/sds011.hpp"
 
 #include "lib/cxxopts.hpp"
 
+#include <fmt/core.h>
+#include <chrono>
 #include <exception>
 #include <iostream>
-#include <fmt/core.h>
 #include <optional>
-#include <type_traits>
 #include <thread>
-#include <chrono>
+#include <type_traits>
 
 namespace {
 void init_handler(auto& h) {
@@ -24,9 +24,7 @@ void init_handler(auto& h) {
 	}
 }
 
-void init_handler(auto& h, auto&& init)
-	requires std::is_rvalue_reference_v<decltype(init)> 
-{
+void init_handler(auto& h, auto&& init) requires std::is_rvalue_reference_v<decltype(init)> {
 	if (!h) {
 		try {
 			h.emplace();
@@ -49,7 +47,7 @@ void print_data(auto& h) {
 	}
 }
 
-void add_data(auto& h, auto&& adder) {
+void add_data(auto& h, auto&& adder) requires std::is_rvalue_reference_v<decltype(adder)> {
 	if (h) {
 		try {
 			const auto data = h->get_data();
@@ -60,7 +58,7 @@ void add_data(auto& h, auto&& adder) {
 		}
 	}
 }
-};
+};  // namespace
 
 int main(int argc, char** argv) {
 	cxxopts::Options options("air", "Air quality");
@@ -68,12 +66,8 @@ int main(int argc, char** argv) {
 	uint sleep_time = 0;
 	bool json = false;
 
-	options
-		.add_options()
-		("s,sleep-time", "sleep time between probes", cxxopts::value<uint>(sleep_time))
-		("j,json", "response in json", cxxopts::value<bool>(json))
-		("h,help", "Print help")
-		;
+	options.add_options()("s,sleep-time", "sleep time between probes", cxxopts::value<uint>(sleep_time))(
+	    "j,json", "response in json", cxxopts::value<bool>(json))("h,help", "Print help");
 
 	auto result = options.parse(argc, argv);
 
@@ -89,7 +83,7 @@ int main(int argc, char** argv) {
 	do {
 		init_handler(s8h);
 
-		init_handler(sds011h, [](auto& h){
+		init_handler(sds011h, [](auto& h) {
 			h->set_sleep(false);
 			h->set_working_period(0);
 			h->set_mode(1);
@@ -99,9 +93,7 @@ int main(int argc, char** argv) {
 
 		if (json) {
 			std::string result;
-			add_data(s8h, [&result](const auto& data) mutable { 
-				result += fmt::format("\"co2\":{}", data.co2);
-			});
+			add_data(s8h, [&result](const auto& data) mutable { result += fmt::format("\"co2\":{}", data.co2); });
 			add_data(sds011h, [&result](const auto& data) mutable {
 				result += fmt::format("{}\"deca_pm25\":{},\"deca_pm10\":{}", (result.empty() ? "" : ","), data.deca_pm25, data.deca_pm10);
 			});

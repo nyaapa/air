@@ -12,7 +12,7 @@ find_library(wiringPi_LIB wiringPi)
 
 target_link_libraries(air fmt::fmt ${wiringPi_LIB})
 
-file(GLOB ALL_SOURCE_FILES *.cpp *.hpp s8/*.cpp s8/*.hpp sds011/*.cpp sds011/*.hpp bme280/*.cpp bme280/*.hpp lib/*.hpp)
+file(GLOB ALL_SOURCE_FILES *.cpp *.hpp s8/*.cpp s8/*.hpp sds011/*.cpp sds011/*.hpp bme280/*.cpp bme280/*.hpp)
 
 add_custom_target(
 	format

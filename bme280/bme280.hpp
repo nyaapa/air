@@ -11,9 +11,13 @@ class bme280 {
 
 	void print_data();
 
-	struct data { uint64_t deca_humidity; uint64_t deca_kelvin; };
+	struct data {
+		uint64_t deca_humidity;
+		uint64_t deca_kelvin;
+	};
 
 	[[nodiscard]] data get_data();
+
  private:
 	int fd;
 };
