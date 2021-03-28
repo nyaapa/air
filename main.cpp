@@ -65,14 +65,14 @@ void add_data(auto& h, auto&& adder) requires std::is_rvalue_reference_v<decltyp
 int main(int argc, char** argv) {
 	cxxopts::Options options("air", "Air quality");
 
-	uint sleep_time = 0;
+	uint interval = 0;
 	bool json = false;
 	std::string name;
 	std::string receiver_host;
 	ushort receiver_port;
 
 	options.add_options()
-		("s,sleep-time", "sleep time between probes", cxxopts::value<uint>(sleep_time))
+		("i,interval", "sleep time between probes", cxxopts::value<uint>(interval))
 		("j,json", "response in json", cxxopts::value<bool>(json))
 		("n,name", "name of that sender, required for sending", cxxopts::value<std::string>(name))
 		("h,host", "receiver host address, requires name, port and json format", cxxopts::value<std::string>(receiver_host))
@@ -152,11 +152,11 @@ int main(int argc, char** argv) {
 			print_data(bme280h);
 		}
 
-		if (sleep_time) {
+		if (interval) {
 			fmt::print(stderr, "---------------------------------------------\n");
-			std::this_thread::sleep_for(std::chrono::seconds(sleep_time));
+			std::this_thread::sleep_for(std::chrono::seconds(interval));
 		}
-	} while (sleep_time);
+	} while (interval);
 
 	return 0;
 }

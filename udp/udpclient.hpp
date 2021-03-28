@@ -2,6 +2,8 @@
 
 #include <netinet/in.h>
 #include <string_view>
+#include <vector>
+#include <cstddef>
 
 class udpclient {
  public:
@@ -16,5 +18,5 @@ class udpclient {
 
  private:
 	int fh;
-	sockaddr_in servaddr;
+	std::vector<std::byte> servaddr;
 };
