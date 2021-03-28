@@ -1,7 +1,9 @@
 #pragma once
 
 #include <netinet/in.h>
+#include <cstddef>
 #include <string_view>
+#include <vector>
 
 class udpclient {
  public:
@@ -16,5 +18,5 @@ class udpclient {
 
  private:
 	int fh;
-	sockaddr_in servaddr;
+	std::vector<std::byte> servaddr;
 };
