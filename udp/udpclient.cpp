@@ -4,9 +4,9 @@
 #include <exception>
 
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <netdb.h>
 
 udpclient::udpclient() : fh{0} {}
 
@@ -34,18 +34,19 @@ void udpclient::connect(const std::string& host, ushort port) {
 		throw std::runtime_error(fmt::format("Failed to get addr info for '{}': {}", host, strerror(errno)));
 	addrs_save = addrs;
 
-	do{
+	do {
 		if (fh = socket(addrs->ai_family, addrs->ai_socktype, addrs->ai_protocol); fh >= 0)
-			break; 
+			break;
 	} while ((addrs = addrs->ai_next));
 
 	servaddr.resize(addrs->ai_addrlen);
- 	memcpy(&servaddr[0], addrs->ai_addr, addrs->ai_addrlen);
+	memcpy(&servaddr[0], addrs->ai_addr, addrs->ai_addrlen);
 
 	freeaddrinfo(addrs_save);
 }
 
 void udpclient::send(const std::string& data) {
-	if (long len = sendto(fh, data.c_str(), data.length(), MSG_CONFIRM, static_cast<const struct sockaddr*>(static_cast<void*>(&servaddr[0])), servaddr.size()); len != static_cast<long>(data.length()))
+	if (long len = sendto(fh, data.c_str(), data.length(), MSG_CONFIRM, reinterpret_cast<const struct sockaddr*>(&servaddr[0]), servaddr.size());
+	    len != static_cast<long>(data.length()))
 		throw std::runtime_error(fmt::format("Failed to send message, delivered only {}: {}", len, strerror(errno)));
 }
