@@ -1,0 +1,8 @@
+[Unit]
+Description=Push air info
+
+[Service]
+ExecStart=/bin/bash -c '/usr/bin/air -j -n $(hostname) -i 60'
+
+[Install]
+WantedBy=multi-user.target

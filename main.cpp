@@ -132,9 +132,9 @@ int main(int argc, char** argv) {
 			});
 			result += "}";
 
-			fmt::print("{}\n", result);
-
 			if (receiver_port) {
+				fmt::print(stderr, "{}\n", result);
+
 				init_handler(client, [&receiver_host, receiver_port](auto& h) { h->connect(receiver_host, receiver_port); });
 
 				if (client) {
@@ -145,6 +145,8 @@ int main(int argc, char** argv) {
 						client.reset();
 					}
 				}
+			} else {
+				fmt::print("{}\n", result);
 			}
 		} else {
 			print_data(s8h);
