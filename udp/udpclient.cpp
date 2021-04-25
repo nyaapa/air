@@ -7,10 +7,11 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 udpclient::udpclient() : fh{0} {}
 
-udpclient::udpclient(udpclient&& o) : fh{o.fh}, servaddr{std::move(o.servaddr)} {
+udpclient::udpclient(udpclient&& o) : fh{o.fh}, servaddr{std::move(o.servaddr)}, servaddr_size{o.servaddr_size} {
 	o.fh = 0;
 }
 
@@ -39,14 +40,15 @@ void udpclient::connect(const std::string& host, ushort port) {
 			break;
 	} while ((addrs = addrs->ai_next));
 
-	servaddr.resize(addrs->ai_addrlen);
-	memcpy(&servaddr[0], addrs->ai_addr, addrs->ai_addrlen);
+	servaddr_size = addrs->ai_addrlen;
+	servaddr = std::unique_ptr<sockaddr>(static_cast<sockaddr*>(aligned_alloc(alignof(sockaddr), servaddr_size)));
+	memcpy(servaddr.get(), addrs->ai_addr, addrs->ai_addrlen);
 
 	freeaddrinfo(addrs_save);
 }
 
 void udpclient::send(const std::string& data) {
-	if (long len = sendto(fh, data.c_str(), data.length(), MSG_CONFIRM, reinterpret_cast<const struct sockaddr*>(&servaddr[0]), servaddr.size());
+	if (long len = sendto(fh, data.c_str(), data.length(), MSG_CONFIRM, servaddr.get(), servaddr_size);
 	    len != static_cast<long>(data.length()))
 		throw std::runtime_error(fmt::format("Failed to send message, delivered only {}: {}", len, strerror(errno)));
 }

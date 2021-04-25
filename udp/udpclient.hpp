@@ -3,7 +3,7 @@
 #include <netinet/in.h>
 #include <cstddef>
 #include <string_view>
-#include <vector>
+#include <memory>
 
 class udpclient {
  public:
@@ -18,5 +18,6 @@ class udpclient {
 
  private:
 	int fh;
-	std::vector<std::byte> servaddr;
+	std::unique_ptr<sockaddr> servaddr;
+	int servaddr_size;
 };
