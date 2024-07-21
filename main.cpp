@@ -1,4 +1,5 @@
 #include "bme280/bme280.hpp"
+#include "bme680/bme680.hpp"
 #include "s8/s8.hpp"
 #include "sds011/sds011.hpp"
 #include "udp/udpclient.hpp"
@@ -108,7 +109,8 @@ int main(int argc, char** argv) {
 
 	std::optional<s8> s8h;
 	std::optional<sds011> sds011h;
-	std::optional<bme280> bme280h;
+	// std::optional<bme280> bme280h;
+	std::optional<bme680> bme680h;
 
 	std::optional<udpclient> client;
 
@@ -121,14 +123,18 @@ int main(int argc, char** argv) {
 			h->set_mode(1);
 		});
 
-		init_handler(bme280h);
+		// init_handler(bme280h);
+		init_handler(bme680h);
 
 		if (json) {
 			std::string result{fmt::format("{{\"name\":\"{}\"", name)};
 			add_data(s8h, [&result](const auto& data) mutable { result += fmt::format(",\"co2\":{}", data.co2); });
 			add_data(sds011h, [&result](const auto& data) mutable { result += fmt::format(",\"deca_pm25\":{},\"deca_pm10\":{}", data.deca_pm25, data.deca_pm10); });
-			add_data(bme280h, [&result](const auto& data) mutable {
-				result += fmt::format(",\"deca_humidity\":{},\"deca_kelvin\":{}", data.deca_humidity, data.deca_kelvin);
+			// add_data(bme280h, [&result](const auto& data) mutable {
+			// 	result += fmt::format(",\"deca_humidity\":{},\"deca_kelvin\":{}", data.deca_humidity, data.deca_kelvin);
+			// });
+			add_data(bme680h, [&result](const auto& data) mutable {
+				result += fmt::format(",{}", data.data);
 			});
 			result += "}";
 
@@ -151,7 +157,8 @@ int main(int argc, char** argv) {
 		} else {
 			print_data(s8h);
 			print_data(sds011h);
-			print_data(bme280h);
+			// print_data(bme280h);
+			print_data(bme680h);
 		}
 
 		if (interval) {

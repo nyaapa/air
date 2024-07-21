@@ -1,10 +1,12 @@
 cmake_minimum_required (VERSION 3.5)
 
-project(air CXX)
+project(air C CXX)
 
-add_compile_options(-Wall -Wextra -Werror -std=c++1z -fconcepts)
+add_compile_options(-Wall -Wextra -Werror)
 
-add_executable(air main.cpp sds011/sds011.cpp s8/s8.cpp bme280/bme280.cpp udp/udpclient.cpp)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -fconcepts")
+
+add_executable(air main.cpp sds011/sds011.cpp s8/s8.cpp bme280/bme280.cpp bme680/bme680.cpp udp/udpclient.cpp)
 
 find_package(fmt)
 
@@ -12,7 +14,7 @@ find_library(wiringPi_LIB wiringPi)
 
 target_link_libraries(air fmt::fmt ${wiringPi_LIB})
 
-file(GLOB ALL_SOURCE_FILES *.cpp *.hpp s8/*.cpp s8/*.hpp sds011/*.cpp sds011/*.hpp bme280/*.cpp bme280/*.hpp udp/*.cpp udp/*.hpp)
+file(GLOB ALL_SOURCE_FILES *.cpp *.hpp s8/*.cpp s8/*.hpp sds011/*.cpp sds011/*.hpp bme280/*.cpp bme280/*.hpp udp/*.cpp udp/*.hpp bme680/*.cpp bme680/*.hpp bme680/*.c bme680/*.h)
 
 add_custom_target(
 	format
